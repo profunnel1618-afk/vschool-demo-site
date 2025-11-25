@@ -22,54 +22,38 @@
   <script src="https://www.chatbase.co/embed.min.js" defer></script>
 
   <script>
-  // Enregistre/écrase le schéma du formulaire côté client
-  window.chatbase = window.chatbase || {};
-  window.chatbase.registerFormSchema && window.chatbase.registerFormSchema({
-    lead_collect: async () => {
-      return {
-        fields: [
-          {
-            name: "parent_name",
-            label: "Parent Name",
-            type: "text",
-            placeholder: "Enter your full name",
-            validation: {
-              required: { value: true, message: "Name is required" }
-            }
-          },
-          {
-            name: "email",
-            label: "Email",
-            type: "email",
-            placeholder: "Enter your email",
-            validation: {
-              required: { value: true, message: "Email is required" }
-            }
-          },
-          {
-            name: "phone",
-            label: "Phone (international)",
-            type: "text",
-            placeholder: "+923001234567",
-            helpText: "Use international format with +92 (Pakistan). Example: +923001234567",
-            validation: {
-              required: { value: true, message: "Phone is required" },
-              pattern: {
-                // Accepte +92 suivi de 10 à 12 chiffres (mobile et fixes PK)
-                value: /^\+92\d{10,12}$/,
-                message: "Enter a valid Pakistani number in international format, e.g. +923001234567"
-              }
-            }
-          }
-        ],
-        submitButtonText: "Submit",
-        successMessage: "Thanks! We’ll get back to you soon.",
-        errorMessage: "Please correct the highlighted fields and submit again."
-      };
+  (function registerWhenReady(actionName, schemaFactory) {
+    function tryRegister() {
+      if (window.chatbase && typeof window.chatbase.registerFormSchema === 'function') {
+        window.chatbase.registerFormSchema({ [actionName]: schemaFactory });
+      } else {
+        setTimeout(tryRegister, 100); // re-try jusqu'à ce que l'API soit dispo
+      }
     }
+    tryRegister();
+  })('lead_collect', async (args, user) => {
+    return {
+      fields: [
+        { name: "parent_name", label: "Parent Name", type: "text",
+          placeholder: "Enter your full name",
+          validation: { required: { value: true, message: "Name is required" } } },
+        { name: "email", label: "Email", type: "email",
+          placeholder: "Enter your email",
+          validation: { required: { value: true, message: "Email is required" } } },
+        { name: "phone", label: "Phone (international)", type: "text",
+          placeholder: "+923001234567",
+          helpText: "Use international format with +92 (Pakistan). Example: +923001234567",
+          validation: {
+            required: { value: true, message: "Phone is required" },
+            pattern: { value: /^\+92\d{10,12}$/, message: "Enter a valid Pakistani number, e.g. +923001234567" }
+          } }
+      ],
+      submitButtonText: "Submit",
+      successMessage: "Thanks! We’ll get back to you soon.",
+      errorMessage: "Please correct the highlighted fields and submit again."
+    };
   });
 </script>
-
 
 </body>
 </html>
